@@ -54,6 +54,5 @@ jobs:
       - name: Login in EKS && Deploying yaml file to EKS Cluster
         working-directory: /home/runner/work/eks-cluster-istio/eks-cluster-istio/eks-cluster/
         run: |
-          ssh-keygen -t rsa
           eksctl create cluster -f cluster.yaml --ssh-public-key=ubuntu
      
