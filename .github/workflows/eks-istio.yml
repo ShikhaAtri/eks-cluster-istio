@@ -47,3 +47,14 @@ jobs:
           # Build a Apache docker container and push it to ECR 
            docker build -t ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:${{ env.IMAGE_TAG}} .
            docker images
+     
+      - name: Push Docker image to ECR
+        id: push-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          echo "Pushing image to ECR..."
+          docker push ${{ env.ECR_REGISTRY}}/${{env.ECR_REPOSITORY}}:${{ env.IMAGE_TAG}}
+          echo "::set-output name=image::${{ env.ECR_REGISTRY}}/${{env.ECR_REPOSITORY}}:${{ env.IMAGE_TAG}}"
+          pwd
+          
