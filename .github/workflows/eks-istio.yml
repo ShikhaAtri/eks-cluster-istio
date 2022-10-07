@@ -49,5 +49,5 @@ jobs:
       - name: Login in EKS && Deploying yaml file to EKS Cluster
         working-directory: /home/runner/work/eks-cluster-istio/eks-cluster-istio/eks-cluster/
         run: |
-          eksctl apply -f cluster.yaml
+          eksctl create cluster -f cluster.yaml
      
