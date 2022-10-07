@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs
+   namespace: demo-eks
+  labels:
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nodejs
+  template:
+    metadata:
+      labels:
+        app: nodejs
+        version: v1
+    spec:
+      containers:
+      - name: nodejs
+        image: 857714342719.dkr.ecr.us-east-1.amazonaws.com/eks-cluster-istio-repo:1
+        ports:
+        - containerPort: 8080
