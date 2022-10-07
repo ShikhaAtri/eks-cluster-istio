@@ -3,8 +3,6 @@ name: CI
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
-  push:
-    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -26,7 +24,6 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
       
       - name: Configure AWS credentials
@@ -38,26 +35,7 @@ jobs:
           
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-    
-      - name: Build Docker image 
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        run: |
-          # Build a Apache docker container and push it to ECR 
-           docker build -t ${{ env.ECR_REGISTRY}}/${{ env.ECR_REPOSITORY}}:${{ env.IMAGE_TAG}} .
-           docker images
-     
-      - name: Push Docker image to ECR
-        id: push-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        run: |
-          echo "Pushing image to ECR..."
-          docker push ${{ env.ECR_REGISTRY}}/${{env.ECR_REPOSITORY}}:${{ env.IMAGE_TAG}}
-          echo "::set-output name=image::${{ env.ECR_REGISTRY}}/${{env.ECR_REPOSITORY}}:${{ env.IMAGE_TAG}}"
-          pwd
-      
+        uses: aws-actions/amazon-ecr-login@v1 
       - name: Install and configure kubectl
         run: |
          VERSION=$(curl --silent https://storage.googleapis.com/kubernetes-release/release/stable.txt)
@@ -69,13 +47,7 @@ jobs:
          sudo mv kubectl /usr/local/bin/
        
       - name: Login in EKS && Deploying yaml file to EKS Cluster
-        working-directory: /home/runner/work/eks-cluster-istio/eks-cluster-istio/k8s/
+        working-directory: /home/runner/work/eks-cluster-istio/eks-cluster-istio/eks-cluster/
         run: |
-          aws eks --region ${{ secrets.AWS_REGION }} describe-cluster --name ${{ secrets.AWS_CLUSTER_NAME }} --query cluster.status
-          aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.AWS_CLUSTER_NAME }}
-          kubectl apply -f namespace.yaml
-          kubectl apply -f deployment.yaml -n demo-eks
-          kubectl apply -f service.yaml -n demo-eks
-          kubectl apply -f hpa.yaml -n demo-eks
-          kubectl get all -n demo-eks
+          kubectl apply -f cluster.yaml
      
