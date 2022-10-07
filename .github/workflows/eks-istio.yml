@@ -57,4 +57,27 @@ jobs:
           docker push ${{ env.ECR_REGISTRY}}/${{env.ECR_REPOSITORY}}:${{ env.IMAGE_TAG}}
           echo "::set-output name=image::${{ env.ECR_REGISTRY}}/${{env.ECR_REPOSITORY}}:${{ env.IMAGE_TAG}}"
           pwd
-          
+      
+      - name: Install and configure kubectl
+        run: |
+         VERSION=$(curl --silent https://storage.googleapis.com/kubernetes-release/release/stable.txt)
+         curl https://storage.googleapis.com/kubernetes-release/release/$VERSION/bin/linux/amd64/kubectl \
+         --progress-bar \
+         --location \
+         --remote-name
+         chmod +x kubectl
+         sudo mv kubectl /usr/local/bin/
+       
+      - name: Login in EKS && Deploying yaml file to EKS Cluster
+        working-directory: /home/runner/work/eks-cluster-istio/eks-cluster-istio/k8s/
+        run: |
+          aws eks --region ${{ secrets.AWS_REGION }} describe-cluster --name ${{ secrets.AWS_CLUSTER_NAME }} --query cluster.status
+          aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.AWS_CLUSTER_NAME }}
+          kubectl apply -f namespace.yaml
+          kubectl apply -f deployment.yaml -n demo-eks
+          kubectl apply -f service.yaml -n demo-eks
+          kubectl apply -f hpa.yaml -n demo-eks
+          kubectl get all -n demo-eks
+          kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+          kubectl get deployment metrics-server -n kube-system
+     
